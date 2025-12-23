@@ -8,6 +8,7 @@ import pickle
 import torch
 import os
 import string
+import re
 
 from openai_harmony import (
     HarmonyEncodingName,
@@ -57,6 +58,13 @@ def build_prompt_from_row(row, template):
             f"Prompt template references column {exc.args[0]!r} which is missing from the dataset row."
         )
 
+
+def sanitize_tag(tag):
+    if not tag:
+        return ""
+    clean = re.sub(r"[^A-Za-z0-9_.-]+", "_", tag.strip())
+    return clean.strip("_")
+
 def safe_parse_oss(output, convo):
     result = []
     for out in output.outputs:
@@ -95,10 +103,28 @@ def args_parse():
         ),
     )
     parser.add_argument("--n", type=int, default=1024)
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=10,
+        help="Number of prompts to generate in a single batch.",
+    )
+    parser.add_argument(
+        "--output_root",
+        type=str,
+        default="result",
+        help="Base directory where result subfolders are created.",
+    )
+    parser.add_argument(
+        "--output_tag",
+        type=str,
+        default="",
+        help="Optional suffix applied to the result subdirectory for this run.",
+    )
     return parser.parse_args()
 
 def load_dataset_to_df(path, subset=None):
-    if split:
+    if subset:
         dataset = load_dataset(path, subset, split='test')
     else:
         dataset = load_dataset(path)
@@ -146,7 +172,14 @@ def format_prompts_oss(df, template):
 def main():
     args = args_parse()
 
-    os.makedirs(f"result/{args.model_name.split('/')[-1]}", exist_ok=True)
+    result_root = args.output_root
+    os.makedirs(result_root, exist_ok=True)
+
+    result_dir = os.path.join(result_root, args.model_name.split("/")[-1])
+    tag = sanitize_tag(args.output_tag)
+    if tag:
+        result_dir = os.path.join(result_dir, tag)
+    os.makedirs(result_dir, exist_ok=True)
 
     model = LLM(args.model_name, tensor_parallel_size=torch.cuda.device_count())
     tokenizer = model.get_tokenizer()
@@ -156,7 +189,7 @@ def main():
     params_dict = model_params[args.model_name]
     params = SamplingParams(n=args.n, max_tokens=32768, **params_dict)
 
-    df = load_dataset_to_df(args.dataset_path, split=args.dataset_path)
+    df = load_dataset_to_df(args.dataset_path, subset=args.dataset_subset)
     template_fields = extract_template_fields(args.prompt_template)
     missing_columns = [
         field for field in template_fields if field not in df.columns
@@ -180,19 +213,24 @@ def main():
         print("Sample formatted prompt (row 0):")
         print(sample_prompt)
 
-    check_index = 0
-    for batch in batched(prompts, 10):
-        dfs = df.iloc[check_index * 10:(check_index + 1) * 10]
+    for batch_index, batch in enumerate(batched(prompts, args.batch_size)):
+        start = batch_index * args.batch_size
+        end = start + len(batch)
+        dfs = df.iloc[start:end]
         dfs.reset_index(inplace=True, drop=True)
 
         outputs = model.generate(batch, params)
         if use_oss:
-            responses = [safe_parse_oss(output, convos[check_index * 10 + ids]) for ids,output in enumerate(outputs)]
+            offset = start
+            responses = [
+                safe_parse_oss(output, convos[offset + ids])
+                for ids, output in enumerate(outputs)
+            ]
         else:
             responses = [safe_parse_original(output) for output in outputs]
         dfs[args.model_name] = responses
-        dfs.to_json(os.path.join("result", args.model_name.split("/")[-1], f"result_{check_index}.jsonl"), lines=True, orient="records")
-        check_index += 1
+        file_name = f"result_{batch_index}.jsonl"
+        dfs.to_json(os.path.join(result_dir, file_name), lines=True, orient="records")
 
 if __name__ == "__main__":
     main()
