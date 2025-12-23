@@ -132,7 +132,7 @@ def load_dataset_to_df(path, subset=None):
         dataset = load_dataset(path)
     if isinstance(dataset, DatasetDict):
         dataset = dataset[next(iter(dataset))]
-    return dataset.to_pandas().head()
+    return dataset.to_pandas()
 
 def format_prompts_general(df, tokenizer, template):
     prompts = []
