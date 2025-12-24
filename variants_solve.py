@@ -67,29 +67,6 @@ def sanitize_tag(tag):
     clean = re.sub(r"[^A-Za-z0-9_.-]+", "_", tag.strip())
     return clean.strip("_")
 
-def safe_parse_oss(output, convo):
-    result = []
-    for out in output.outputs:
-        try:
-            entries = encoding.parse_messages_from_completion_tokens(out.token_ids, Role.ASSISTANT)
-            result.append(convo.messages + entries)
-            # result.append(entries)
-        except Exception as e:
-            print(e)
-            result.append(None)
-
-    return result
-
-def safe_parse_original(output):
-    result = []
-    for out in output.outputs:
-        try:
-            result.append(out.text)
-        except:
-            result.append(None)
-
-    return result
-
 def args_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str)
@@ -126,8 +103,10 @@ def args_parse():
     return parser.parse_args()
 
 def load_dataset_to_df(path, subset=None):
+    if not path:
+        raise ValueError("`dataset_path` is required; pass --dataset_path with a non-empty path.")
     if subset:
-        dataset = load_dataset(path, subset, split='test')
+        dataset = load_dataset(path, subset, split="test")
     else:
         dataset = load_dataset(path)
     if isinstance(dataset, DatasetDict):
@@ -218,21 +197,26 @@ def main():
     for batch_index, batch in enumerate(batched(prompts, args.batch_size)):
         start = batch_index * args.batch_size
         end = start + len(batch)
-        dfs = df.iloc[start:end]
-        dfs.reset_index(inplace=True, drop=True)
+        batch_rows = df.iloc[start:end].reset_index(drop=True).to_dict(orient="records")
 
         outputs = model.generate(batch, params)
-        if use_oss:
-            offset = start
-            responses = [
-                safe_parse_oss(output, convos[offset + ids])
-                for ids, output in enumerate(outputs)
-            ]
-        else:
-            responses = [safe_parse_original(output) for output in outputs]
-        dfs[args.model_name] = responses
-        file_name = f"result_{batch_index}.jsonl"
-        dfs.to_json(os.path.join(result_dir, file_name), lines=True, orient="records")
+
+        batch_payload = {
+            "model_name": args.model_name,
+            "prompt_template": args.prompt_template,
+            "batch_index": batch_index,
+            "use_oss": use_oss,
+            "start_index": start,
+            "end_index": end,
+            "prompts": batch,
+            "dataset_rows": batch_rows,
+            "outputs": outputs,
+            "params": params,
+        }
+
+        file_name = f"batch_{batch_index}.pkl"
+        with open(os.path.join(result_dir, file_name), "wb") as pickle_file:
+            pickle.dump(batch_payload, pickle_file)
 
 if __name__ == "__main__":
     main()

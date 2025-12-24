@@ -2,8 +2,8 @@
 
 export HF_TOKEN=""
 
-# DATASET_PATH="amphora/suhak-variants"
-# DATASET_SUBSET="suhak_pivot"
+DATASET_PATH="amphora/suhak-variants"
+DATASET_SUBSET="suhak_pivot"
 # PROMPT_TEMPLATE=$'Solve the given question and output the final answer in the following format: \\boxed{{N}}. \n\n{question}'
 # N=32
 
