@@ -56,7 +56,7 @@ DATASET_SUBSET="suhak_pivot"
 
 
 PROMPT_TEMPLATE=$'{question} \n\n {solution_text}.\n\nRefer to the question-solution set provided above. Solve the provided question below and output the final answer in the following format: \\boxed{{N}}. \n\n {variant question}'
-N=32
+N=64
 BATCH_SIZE=25
 MODELS=(
   "openai/gpt-oss-120b"
