@@ -27,7 +27,7 @@ encoding = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)
 model_params = {
     "openai/gpt-oss-120b": {"temperature": 1.0, "stop_token_ids": encoding.stop_tokens_for_assistant_actions()},
     "openai/gpt-oss-20b": {"temperature": 1.0, "stop_token_ids": encoding.stop_tokens_for_assistant_actions()},
-    "Qwen/Qwen3-30B-A3B-Instruct-2507": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
+    "Qwen/Qwen3-30B-A3B-Thinking-2507": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
     "Qwen/Qwen3-4B-Thinking-2507": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
 }
 
@@ -189,7 +189,7 @@ def main():
     max_model_len = config.max_position_embeddings
 
     params_dict = model_params[args.model_name]
-    params = SamplingParams(n=args.n, max_tokens=32768, **params_dict)
+    params = SamplingParams(n=args.n, max_tokens=16384, **params_dict)
 
     df = load_dataset_to_df(args.dataset_path, subset=args.dataset_subset)
     template_fields = extract_template_fields(args.prompt_template)
