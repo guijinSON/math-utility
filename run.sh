@@ -2,11 +2,11 @@
 
 export HF_TOKEN=""
 
-DATASET_PATH="amphora/suhak-variants"
-DATASET_SUBSET="suhak_pivot"
+# DATASET_PATH="amphora/suhak-variants"
+# DATASET_SUBSET="suhak_pivot"
 # PROMPT_TEMPLATE=$'Solve the given question and output the final answer in the following format: \\boxed{{N}}. \n\n{question}'
-N=32
-BATCH_SIZE=25
+# N=32
+
 
 # MODELS=(
 #   "openai/gpt-oss-120b"
@@ -31,7 +31,8 @@ BATCH_SIZE=25
 DATASET_PATH="amphora/suhak-variants"
 DATASET_SUBSET="suhak_pivot"
 PROMPT_TEMPLATE=$'Solve the given question and output the final answer in the following format: \\boxed{{N}}. \n\n{variant question}'
-N=32
+BATCH_SIZE=25
+N=16
 
 MODELS=(
   "openai/gpt-oss-120b"
@@ -55,7 +56,7 @@ done
 
 
 PROMPT_TEMPLATE=$'{question} \n\n {solution_text}.\n\nRefer to the question-solution set provided above. Solve the provided question below and output the final answer in the following format: \\boxed{{N}}. \n\n {variant question}'
-N=128
+N=32
 MODELS=(
   "openai/gpt-oss-120b"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
