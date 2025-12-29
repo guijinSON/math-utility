@@ -211,7 +211,7 @@ def main():
             "prompts": batch,
             "dataset_rows": batch_rows,
             "outputs": outputs,
-            "params": params,
+            # "params": params,
         }
 
         file_name = f"batch_{batch_index}.pkl"
