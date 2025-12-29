@@ -51,7 +51,7 @@ Question:
 Solution:
 {solution_text}"""
 
-N=1
+N=16
 BATCH_SIZE=25
 MODELS=(
   "openai/gpt-oss-120b"
@@ -114,7 +114,7 @@ Question:
 Solution:
 {solution_text}"""
 
-N=1
+N=16
 BATCH_SIZE=25
 MODELS=(
   "openai/gpt-oss-120b"
