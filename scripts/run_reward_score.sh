@@ -1,23 +1,21 @@
 #!/bin/bash
-set -euo pipefail
 
-# Fill in if you need private weights
 export HF_TOKEN=""
 
 DATASET_PATH="amphora/suhak-variants"
 DATASET_SUBSET="suhak_pivot"
 
 # System template can reference dataset columns, e.g. {question} or {variant question}
-SYSTEM_TEMPLATE=$'You are an impartial mathematical judge.\nYou will be given a math problem (question) and a proposed solution (assistant response).\nCarefully evaluate the solution for logical correctness, mathematical validity, completeness, and rigor.\nProvide a reward score that reflects the overall quality of the solution.'
+SYSTEM_TEMPLATE=$'Solve the provided question below and output the final answer in the following format: \\boxed{{N}}.'
 
 QUESTION_COLUMN="question"
 ANSWER_COLUMN="solution_text"
 
-BATCH_SIZE=8
+BATCH_SIZE=64
 OUTPUT_TAG="rm_eval"
 
 MODELS=(
-  "nvidia/AceMath-72B-RM"
+  "nvidia/AceMath-7B-RM"
 )
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,4 +34,3 @@ for MODEL in "${MODELS[@]}"; do
     --output_tag "$OUTPUT_TAG" \
     "$@"
 done
-

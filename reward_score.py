@@ -151,11 +151,26 @@ def main():
         result_dir = os.path.join(result_dir, tag)
     os.makedirs(result_dir, exist_ok=True)
 
+    rope_theta = 1000000 
+    original_max_position_embeddings = 4096
+    factor = 2.0
+    hf_overrides = { 
+        "rope_parameters": { 
+            "rope_theta": rope_theta, 
+            "rope_type": "yarn", 
+            "factor": factor, 
+            "original_max_position_embeddings": original_max_position_embeddings, 
+        }, 
+        "max_model_len": int(original_max_position_embeddings * factor), 
+    }
     model = LLM(
         args.model_name,
         tensor_parallel_size=torch.cuda.device_count(),
-        task="reward_modeling",
+        runner="pooling",
+        trust_remote_code=True,           
+        hf_overrides=hf_overrides
     )
+    
     tokenizer = model.get_tokenizer()
     config = AutoConfig.from_pretrained(args.model_name)
     max_model_len = getattr(config, "max_position_embeddings", None)
@@ -194,14 +209,33 @@ def main():
         end = start + len(batch)
         batch_rows = df.iloc[start:end].reset_index(drop=True).to_dict(orient="records")
 
-        results = model.score(batch)
+        results = model.reward(batch)  # batch can be a list[str]
 
         scores = []
-        for res in results:
-            if not res.outputs:
+        raw_outputs = []
+        
+        for out in results:
+            data = getattr(out.outputs, "data", None)  # torch.Tensor or None
+            if data is None:
                 scores.append(None)
+                raw_outputs.append(None)
                 continue
-            scores.append(res.outputs[0].score)
+        
+            # Keep a JSON-friendly copy for logging
+            try:
+                raw_outputs.append(data.detach().cpu().tolist())
+            except Exception:
+                raw_outputs.append(repr(data))
+        
+            # Produce a single float "score" per prompt.
+            # Most reward models give a scalar; if it’s a vector, take the last element.
+            try:
+                if hasattr(data, "numel") and data.numel() == 1:
+                    scores.append(float(data.item()))
+                else:
+                    scores.append(float(data.reshape(-1)[-1].item()))
+            except Exception:
+                scores.append(None)
 
         batch_payload = {
             "model_name": args.model_name,
