@@ -27,6 +27,7 @@ encoding = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)
 model_params = {
     "openai/gpt-oss-120b": {"temperature": 1.0, "stop_token_ids": encoding.stop_tokens_for_assistant_actions()},
     "openai/gpt-oss-20b": {"temperature": 1.0, "stop_token_ids": encoding.stop_tokens_for_assistant_actions()},
+    "Qwen/Qwen3-235B-A22B-Thinking-2507": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
     "Qwen/Qwen3-30B-A3B-Thinking-2507": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
     "Qwen/Qwen3-4B-Thinking-2507": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
 }
