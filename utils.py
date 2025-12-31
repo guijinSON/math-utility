@@ -1,6 +1,34 @@
 import pickle
 from typing import Any
+import re
+from typing import Optional, Dict
 
+SUMMARY_RE = re.compile(
+    r"(?ims)^\s*\**\s*Summary\s*\**\s*:\s*(.*?)\s*(?=^\s*\**\s*Detailed\s+Analysis\s*\**\s*:|^\s*\**\s*Score\s*\**\s*:|\Z)"
+)
+
+ANALYSIS_RE = re.compile(
+    r"(?ims)^\s*\**\s*Detailed\s+Analysis\s*\**\s*:\s*(.*?)\s*(?=^\s*\**\s*Score\s*\**\s*:|\Z)"
+)
+
+SCORE_RE = re.compile(
+    r"(?im)^\s*(?:\*\*|__)?\s*Score\s*(?:\*\*|__)?\s*[:\-]\s*(?:\*\*|__)?\s*([1-9]|10)\s*(?:\*\*|__)?\b"
+)
+
+def parse_evaluation(text: str) -> Dict[str, Optional[object]]:
+    summary_match = SUMMARY_RE.search(text)
+    analysis_match = ANALYSIS_RE.search(text)
+    score_match = SCORE_RE.search(text)
+
+    summary = summary_match.group(1).strip() if summary_match else None
+    detailed_analysis = analysis_match.group(1).strip() if analysis_match else None
+    score = int(score_match.group(1)) if score_match else None
+
+    return {
+        "summary": summary,
+        "detailed_analysis": detailed_analysis,
+        "score": score,
+    }
 
 class SamplingParamsProxy:
     """Lightweight stand-in for vllm.sampling_params.SamplingParams."""
