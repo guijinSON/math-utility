@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Export your OpenAI-compatible API key in the environment before running.
-# Example: export OPENAI_API_KEY="sk-..."
+# Run GenRM locally via vLLM. Ensure model weights are available (HF auth if
+# needed) and GPUs are visible (e.g., CUDA_VISIBLE_DEVICES).
 
 DATASET_PATH="amphora/suhak-variants"
 DATASET_SUBSET="suhak_pivot"
@@ -9,8 +9,12 @@ QUESTION_COLUMN="question"
 ANSWER_COLUMN="solution_text"
 DUMMY_RESPONSE="N/A"
 
+# GENERATION CONFIG
 BATCH_SIZE=8
 OUTPUT_TAG="genrm_eval"
+TEMPERATURE=0.6
+TOP_P=0.95
+MAX_TOKENS=16384
 
 MODELS=(
   "nvidia/Qwen3-Nemotron-235B-A22B-GenRM"
@@ -29,6 +33,9 @@ for MODEL in "${MODELS[@]}"; do
     --answer_column "$ANSWER_COLUMN" \
     --dummy_response "$DUMMY_RESPONSE" \
     --batch_size "$BATCH_SIZE" \
+    --temperature "$TEMPERATURE" \
+    --top_p "$TOP_P" \
+    --max_tokens "$MAX_TOKENS" \
     --output_tag "$OUTPUT_TAG" \
     "$@"
 done

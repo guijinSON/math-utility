@@ -5,7 +5,9 @@ from typing import Any, Dict, List
 
 import pandas as pd
 from datasets import DatasetDict, load_dataset
-from openai import OpenAI
+import torch
+from transformers import AutoTokenizer
+from vllm import LLM, SamplingParams
 
 
 def load_dataset_to_df(path: str, subset: str | None = None) -> pd.DataFrame:
@@ -63,18 +65,6 @@ def args_parse() -> argparse.Namespace:
     parser.add_argument("--temperature", type=float, default=0.6)
     parser.add_argument("--top_p", type=float, default=0.95)
     parser.add_argument("--max_tokens", type=int, default=16384)
-    parser.add_argument(
-        "--api_base",
-        type=str,
-        default=None,
-        help="Override base URL for the OpenAI-compatible endpoint.",
-    )
-    parser.add_argument(
-        "--api_key_env",
-        type=str,
-        default="OPENAI_API_KEY",
-        help="Environment variable name containing the API key.",
-    )
     return parser.parse_args()
 
 
@@ -96,15 +86,6 @@ def completion_text(content: str) -> str:
 def main() -> None:
     args = args_parse()
 
-    api_key = os.environ.get(args.api_key_env)
-    if not api_key:
-        raise RuntimeError(f"Missing API key; set {args.api_key_env} in the environment.")
-
-    client_kwargs = {"api_key": api_key}
-    if args.api_base:
-        client_kwargs["base_url"] = args.api_base
-    client = OpenAI(**client_kwargs)
-
     result_root = args.output_root
     os.makedirs(result_root, exist_ok=True)
 
@@ -113,6 +94,15 @@ def main() -> None:
     if tag:
         result_dir = os.path.join(result_dir, tag)
     os.makedirs(result_dir, exist_ok=True)
+
+    # Initialize vLLM model and tokenizer
+    model = LLM(args.model_name, tensor_parallel_size=torch.cuda.device_count())
+    tokenizer = model.get_tokenizer()
+    sampling_params = SamplingParams(
+        temperature=args.temperature,
+        top_p=args.top_p,
+        max_tokens=args.max_tokens,
+    )
 
     df = load_dataset_to_df(args.dataset_path, subset=args.dataset_subset)
     for required_col in [args.question_column, args.answer_column]:
@@ -128,20 +118,25 @@ def main() -> None:
             for row in batch_rows
         ]
 
+        prompts_batch = [
+            tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+            for messages in messages_batch
+        ]
+
+        generation_outputs = model.generate(prompts_batch, sampling_params)
+
         outputs = []
         raw_outputs = []
-        for messages in messages_batch:
-            completion = client.chat.completions.create(
-                model=args.model_name,
-                messages=messages,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                max_tokens=args.max_tokens,
-                stream=False,
-            )
-            content = completion.choices[0].message.content if completion.choices else ""
-            outputs.append(completion_text(content or ""))
-            raw_outputs.append(completion.model_dump() if hasattr(completion, "model_dump") else completion)
+        for gen_out in generation_outputs:
+            text = ""
+            if gen_out.outputs:
+                text = gen_out.outputs[0].text or ""
+            outputs.append(completion_text(text))
+            raw_outputs.append(gen_out)
 
         batch_payload = {
             "model_name": args.model_name,
