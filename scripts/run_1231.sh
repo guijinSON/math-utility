@@ -11,7 +11,7 @@ BATCH_SIZE=25
 MODELS=(
   # "openai/gpt-oss-120b"
 #   "openai/gpt-oss-20b"
-  "Qwen/Qwen3-235B-A22B-Thinking-2507"
+  # "Qwen/Qwen3-235B-A22B-Thinking-2507"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
 #   "Qwen/Qwen3-4B-Thinking-2507"
 )
@@ -37,7 +37,7 @@ N=1024
 
 MODELS=(
   # "openai/gpt-oss-120b"
-   "Qwen/Qwen3-235B-A22B-Thinking-2507"
+   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
   # "openai/gpt-oss-20b"
   # "Qwen/Qwen3-30B-A3B-Thinking-2507"
@@ -110,7 +110,7 @@ Solution:
 N=64
 BATCH_SIZE=25
 MODELS=(
-   "Qwen/Qwen3-235B-A22B-Thinking-2507"
+   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
@@ -173,7 +173,7 @@ Solution:
 N=64
 BATCH_SIZE=25
 MODELS=(
-   "Qwen/Qwen3-235B-A22B-Thinking-2507"
+   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
@@ -195,7 +195,7 @@ PROMPT_TEMPLATE=$'{question} \n\n {solution_text}.\n\nRefer to the question-solu
 N=64
 BATCH_SIZE=25
 MODELS=(
-   "Qwen/Qwen3-235B-A22B-Thinking-2507"
+   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
   # "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
