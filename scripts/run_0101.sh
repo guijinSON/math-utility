@@ -11,7 +11,7 @@ PROMPT_TEMPLATE=$'{question} \n\n {solution_text}.\n\nRefer to the question-solu
 N=64
 BATCH_SIZE=25
 MODELS=(
-     # "Qwen/Qwen3-235B-A22B-Thinking-2507"
+     "Qwen/Qwen3-235B-A22B-Thinking-2507"
       "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
@@ -78,7 +78,7 @@ Solution:
 N=64
 BATCH_SIZE=25
 MODELS=(
-   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
+   "Qwen/Qwen3-235B-A22B-Thinking-2507"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
@@ -95,66 +95,4 @@ for MODEL in "${MODELS[@]}"; do
     --output_tag "$OUTPUT_TAG"
 done
 
-
-PROMPT_TEMPLATE=$"""You are an impartial mathematical judge.
-You will be given a math problem and a proposed solution without an explicit final answer.
-
-Your task is to determine whether the solution is mathematically correct in both reasoning and conclusion, and whether it fully solves the given problem.
-
-You must rely on your own independent reasoning to assess correctness.
-
-Acceptance Criteria:
-Accept the solution only if all of the following hold:
-1. The reasoning is mathematically valid.
-2. All necessary steps are justified.
-3. There are no logical or computational errors.
-4. The solution fully addresses the question.
-5. Any omitted step would not affect correctness.
-
-If any error, gap, or unjustified leap is found, the solution must be rejected.
-Partial solutions or high level arguments must be rejected.
-
-Required Output Format:
-Evaluation:
-<brief explanation of your reasoning>
-
-Accepted: [[Y]]
-
-or
-
-Evaluation:
-<brief explanation of your reasoning>
-
-Accepted: [[N]]
-
-
----
-
-Here is the question and solution:
-
-Question:
-{question}
-
-Solution:
-{solution_text}"""
-
-N=64
-BATCH_SIZE=25
-MODELS=(
-   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
-  "Qwen/Qwen3-30B-A3B-Thinking-2507"
-)
-
-OUTPUT_TAG="real_math_new_pivot_llm_judge_pairwise"
-for MODEL in "${MODELS[@]}"; do
-  echo "Running ${MODEL}..."
-  python variants_solve.py \
-    --model_name "$MODEL" \
-    --dataset_path "$DATASET_PATH" \
-    --dataset_subset "$DATASET_SUBSET" \
-    --prompt_template "$PROMPT_TEMPLATE" \
-    --n "$N" \
-    --batch_size "$BATCH_SIZE" \
-    --output_tag "$OUTPUT_TAG"
-done
 
