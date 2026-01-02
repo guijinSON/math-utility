@@ -11,7 +11,7 @@ PROMPT_TEMPLATE=$'{question} \n\n {solution_text}.\n\nRefer to the question-solu
 N=64
 BATCH_SIZE=25
 MODELS=(
-     "Qwen/Qwen3-235B-A22B-Thinking-2507"
+     # "Qwen/Qwen3-235B-A22B-Thinking-2507"
       "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
@@ -78,7 +78,7 @@ Solution:
 N=64
 BATCH_SIZE=25
 MODELS=(
-   "Qwen/Qwen3-235B-A22B-Thinking-2507"
+   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
@@ -141,7 +141,7 @@ Solution:
 N=64
 BATCH_SIZE=25
 MODELS=(
-   "Qwen/Qwen3-235B-A22B-Thinking-2507"
+   # "Qwen/Qwen3-235B-A22B-Thinking-2507"
   "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
