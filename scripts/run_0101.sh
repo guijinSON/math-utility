@@ -12,7 +12,7 @@ N=64
 BATCH_SIZE=25
 MODELS=(
      "Qwen/Qwen3-235B-A22B-Thinking-2507"
-      "Qwen/Qwen3-30B-A3B-Thinking-2507"
+      # "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
 OUTPUT_TAG="real_math_new_pivot_variant_with_reference"
@@ -79,7 +79,7 @@ N=64
 BATCH_SIZE=25
 MODELS=(
    "Qwen/Qwen3-235B-A22B-Thinking-2507"
-  "Qwen/Qwen3-30B-A3B-Thinking-2507"
+  # "Qwen/Qwen3-30B-A3B-Thinking-2507"
 )
 
 OUTPUT_TAG="real_math_new_pivot_llm_judge_pointwise"
