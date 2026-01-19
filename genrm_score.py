@@ -102,7 +102,7 @@ def main() -> None:
     os.makedirs(result_dir, exist_ok=True)
 
     # Initialize vLLM model and tokenizer
-    model = LLM(args.model_name, tensor_parallel_size=torch.cuda.device_count())
+    model = LLM(args.model_name, tensor_parallel_size=torch.cuda.device_count(),trust_remote_code=True)
     tokenizer = model.get_tokenizer()
     sampling_params = SamplingParams(
         n=args.n,
