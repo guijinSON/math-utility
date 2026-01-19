@@ -60,6 +60,12 @@ def args_parse() -> argparse.Namespace:
         help="Placeholder content for response_2.",
     )
     parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument(
+        "--n",
+        type=int,
+        default=1,
+        help="Number of completions to generate per prompt.",
+    )
     parser.add_argument("--output_root", type=str, default="result")
     parser.add_argument("--output_tag", type=str, default="")
     parser.add_argument("--temperature", type=float, default=0.6)
@@ -99,6 +105,7 @@ def main() -> None:
     model = LLM(args.model_name, tensor_parallel_size=torch.cuda.device_count())
     tokenizer = model.get_tokenizer()
     sampling_params = SamplingParams(
+        n=args.n,
         temperature=args.temperature,
         top_p=args.top_p,
         max_tokens=args.max_tokens,
@@ -130,12 +137,18 @@ def main() -> None:
         generation_outputs = model.generate(prompts_batch, sampling_params)
 
         outputs = []
+        outputs_all = []
         raw_outputs = []
         for gen_out in generation_outputs:
-            text = ""
-            if gen_out.outputs:
-                text = gen_out.outputs[0].text or ""
-            outputs.append(completion_text(text))
+            completions = []
+            for output in gen_out.outputs or []:
+                completions.append(completion_text(output.text or ""))
+
+            if not completions:
+                completions.append("")
+
+            outputs.append(completions[0])
+            outputs_all.append(completions)
             raw_outputs.append(gen_out)
 
         batch_payload = {
@@ -143,6 +156,7 @@ def main() -> None:
             "question_column": args.question_column,
             "answer_column": args.answer_column,
             "dummy_response": args.dummy_response,
+            "n": args.n,
             "batch_index": batch_index // args.batch_size,
             "start_index": batch_index,
             "end_index": batch_index + len(batch_rows),
@@ -152,6 +166,7 @@ def main() -> None:
             "messages": messages_batch,
             "dataset_rows": batch_rows,
             "outputs": outputs,
+            "outputs_all": outputs_all,
             "raw_outputs": raw_outputs,
         }
 

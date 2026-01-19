@@ -1,5 +1,7 @@
 vllm
 datasets
 more-itertools
+litellm
+
 
 

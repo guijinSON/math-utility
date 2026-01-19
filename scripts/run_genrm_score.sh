@@ -10,6 +10,7 @@ ANSWER_COLUMN="solution_text"
 DUMMY_RESPONSE="N/A"
 
 # GENERATION CONFIG
+BATCH_N=1
 BATCH_SIZE=8
 OUTPUT_TAG="genrm_eval"
 TEMPERATURE=0.6
@@ -32,6 +33,7 @@ for MODEL in "${MODELS[@]}"; do
     --question_column "$QUESTION_COLUMN" \
     --answer_column "$ANSWER_COLUMN" \
     --dummy_response "$DUMMY_RESPONSE" \
+    --n "$BATCH_N" \
     --batch_size "$BATCH_SIZE" \
     --temperature "$TEMPERATURE" \
     --top_p "$TOP_P" \
