@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export HF_TOKEN=""
 # Run GenRM locally via vLLM. Ensure model weights are available (HF auth if
 # needed) and GPUs are visible (e.g., CUDA_VISIBLE_DEVICES).
 
@@ -10,8 +11,8 @@ ANSWER_COLUMN="solution_text"
 DUMMY_RESPONSE="N/A"
 
 # GENERATION CONFIG
-BATCH_N=1
-BATCH_SIZE=8
+BATCH_N=64
+BATCH_SIZE=25
 OUTPUT_TAG="genrm_eval"
 TEMPERATURE=0.6
 TOP_P=0.95
@@ -19,6 +20,7 @@ MAX_TOKENS=16384
 
 MODELS=(
   "nvidia/Qwen3-Nemotron-235B-A22B-GenRM"
+  # "nvidia/Llama-3_3-Nemotron-Super-49B-GenRM"
 )
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
