@@ -163,7 +163,7 @@ def main():
         result_dir = os.path.join(result_dir, tag)
     os.makedirs(result_dir, exist_ok=True)
 
-    model = LLM(args.model_name, tensor_parallel_size=torch.cuda.device_count())
+    model = LLM(args.model_name, tensor_parallel_size=torch.cuda.device_count(), gpu_memory_utilization=0.8)
     tokenizer = model.get_tokenizer()
     config = AutoConfig.from_pretrained(args.model_name)
     max_model_len = config.max_position_embeddings
